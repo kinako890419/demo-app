@@ -1,4 +1,17 @@
 services:
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../dockerfiles/Dockerfile
+    container_name: app-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend/src:/app/src
+    depends_on:
+      - otel-collector
+
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: local-exp-otel-collector
