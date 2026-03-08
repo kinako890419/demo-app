@@ -73,14 +73,14 @@ service:
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [file/logs, opensearch/logs]
+      exporters: [file/logs, opensearch/logs, otlp_http/grafana]
 
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [file/traces, otlp/data-prepper-traces]
+      exporters: [file/traces, otlp/data-prepper-traces, otlp_http/grafana]
 
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [file/metrics, prometheus]
+      exporters: [file/metrics, otlp_http/grafana]

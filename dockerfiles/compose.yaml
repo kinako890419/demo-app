@@ -66,7 +66,7 @@ services:
       opensearch:
         condition: service_healthy
 
-  # Data Prepper (OpenSearch Trace & Log Analytics)
+  # Data Prepper (OpenSearch Trace Analytics)
   data-prepper:
     image: opensearchproject/data-prepper:latest
     container_name: local-exp-data-prepper
@@ -75,7 +75,6 @@ services:
       - ../src/main/resources/opensearch/data-prepper-config.yaml:/usr/share/data-prepper/config/data-prepper-config.yaml
     ports:
       - "21890:21890"   # OTLP traces
-      - "21891:21891"   # OTLP logs
     healthcheck:
       test: [ "CMD-SHELL", "curl -sf http://localhost:4900/list || exit 1" ]
       interval: 10s

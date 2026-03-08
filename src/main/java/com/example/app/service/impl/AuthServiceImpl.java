@@ -15,11 +15,13 @@ import com.example.app.service.AuthService;
 //import io.micrometer.observation.annotation.Observed;
 //import io.opentelemetry.api.trace.Span;
 //import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.trace.Tracer;
+//import io.micrometer.core.instrument.MeterRegistry;
+//import io.opentelemetry.api.trace.Tracer;
 //import io.opentelemetry.context.Scope;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+//import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authManager;
+//    private final MeterRegistry meterRegistry;
 
 //    private final Tracer tracer;
 
@@ -85,13 +88,26 @@ public class AuthServiceImpl implements AuthService {
 
         UsersAccountEntity user = userRepo.findByEmail(email).orElseThrow(() -> {
             log.warn("Login failed — user not found: email={}", email);
+//            meterRegistry.counter("auth.login.failure", "reason", "user_not_found").increment();
             return new DataNotFoundException("User not found");
         });
 
         // Password
+
         Authentication authentication = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, req.getUserPassword())
         );
+
+//        Authentication authentication;
+//        try {
+//            authentication = authManager.authenticate(
+//                    new UsernamePasswordAuthenticationToken(email, req.getUserPassword())
+//            );
+//        } catch (AuthenticationException e) {
+//            log.warn("Login failed — bad credentials: email={}", email);
+//            meterRegistry.counter("auth.login.failure", "reason", "bad_credentials").increment();
+//            throw e;
+//        }
 
         String token = jwtService.generateToken(email);
         log.debug("JWT token generated for email={}", email);

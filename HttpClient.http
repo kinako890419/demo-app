@@ -21,3 +21,11 @@ Content-Type: application/json
   "user_password": "password123"
 }
 
+### User Login fail
+POST http://localhost:8181/api/auth/login
+Content-Type: application/json
+
+{
+  "user_mail": "testuser2@example.com",
+  "user_password": "pa123"
+}
