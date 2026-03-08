@@ -40,3 +40,7 @@ build/
 
 # ai chat
 /.claude/
+
+# frontend
+/frontend/node_modules/
+/frontend/dist/
