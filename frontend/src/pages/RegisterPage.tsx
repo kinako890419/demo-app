@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState } from 'react'
+import { ChangeEvent, SubmitEvent, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import apiClient from '../api/client'
 
@@ -12,7 +12,7 @@ export default function RegisterPage() {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value })
 
-  const handleRegister = async (e: FormEvent) => {
+  const handleRegister = async (e: SubmitEvent) => {
     e.preventDefault()
     setError('')
     setSuccess('')

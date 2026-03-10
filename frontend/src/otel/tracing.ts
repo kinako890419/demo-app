@@ -1,9 +1,12 @@
-import { WebTracerProvider, StackContextManager, BatchSpanProcessor } from '@opentelemetry/sdk-trace-web';
+import { WebTracerProvider, BatchSpanProcessor } from '@opentelemetry/sdk-trace-web';
+import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { Resource, resourceFromAttributes } from '@opentelemetry/resources';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
+import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load';
+import { UserInteractionInstrumentation } from '@opentelemetry/instrumentation-user-interaction';
 import { trace, Tracer } from '@opentelemetry/api';
 import {
     ATTR_SERVICE_NAME,
@@ -31,13 +34,17 @@ const provider: WebTracerProvider = new WebTracerProvider({
 
 // Register trace context propagators
 provider.register({
-  contextManager: new StackContextManager(),
+  contextManager: new ZoneContextManager(),
   propagator: new W3CTraceContextPropagator(),
 });
 
 // Register auto-instrumentations
 registerInstrumentations({
   instrumentations: [
+    new DocumentLoadInstrumentation(),
+    new UserInteractionInstrumentation({
+      eventNames: ['click', 'input'] // instrument click and input events only
+    }),
     new XMLHttpRequestInstrumentation({
       propagateTraceHeaderCorsUrls: [/localhost:8181/],
       clearTimingResources: true,

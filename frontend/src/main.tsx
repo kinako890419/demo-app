@@ -1,4 +1,6 @@
-// Import OTel first to ensure instrumentation is set up before any fetch calls
+// zone.js must be first — required by ZoneContextManager for async context propagation
+import 'zone.js';
+// Import OTel next to ensure instrumentation is set up before any fetch calls
 import './otel/tracing.ts'
 
 import React from 'react'

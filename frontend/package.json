@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "@opentelemetry/api": "latest",
+    "@opentelemetry/context-zone": "^2.6.0",
     "@opentelemetry/core": "latest",
     "@opentelemetry/exporter-trace-otlp-http": "latest",
     "@opentelemetry/instrumentation": "latest",
+    "@opentelemetry/instrumentation-document-load": "latest",
+    "@opentelemetry/instrumentation-user-interaction": "^0.57.0",
     "@opentelemetry/instrumentation-xml-http-request": "latest",
     "@opentelemetry/resources": "latest",
     "@opentelemetry/sdk-trace-base": "latest",
@@ -21,7 +24,8 @@
     "axios": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "react-router-dom": "latest"
+    "react-router-dom": "latest",
+    "zone.js": "^0.16.1"
   },
   "devDependencies": {
     "@types/react": "latest",
