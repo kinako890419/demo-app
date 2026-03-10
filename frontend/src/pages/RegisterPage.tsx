@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { ChangeEvent, FormEvent, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-
-const API_BASE = 'http://localhost:8181'
+import apiClient from '../api/client'
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ username: '', email: '', password: '' })
@@ -10,32 +9,26 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  const handleChange = (e) =>
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value })
 
-  const handleRegister = async (e) => {
+  const handleRegister = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
     setSuccess('')
     setLoading(true)
 
-    // FetchInstrumentation automatically traces this request and injects the traceparent header to correlate with the backend trace.
+    // XMLHttpRequestInstrumentation automatically traces this request and injects the traceparent header to correlate with the backend trace.
     try {
-      const response = await fetch(`${API_BASE}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_name: form.username,
-          password: form.password,
-          email: form.email,
-        }),
+      await apiClient.post('/api/auth/register', {
+        user_name: form.username,
+        password: form.password,
+        email: form.email,
       })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.message || `Registration failed (${response.status})`)
       setSuccess('Account created! Redirecting to login…')
       setTimeout(() => navigate('/login'), 1500)
     } catch (err) {
-      setError(err.message)
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
       setLoading(false)
     }

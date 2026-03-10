@@ -9,21 +9,25 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "latest",
-    "react-dom": "latest",
-    "react-router-dom": "latest",
     "@opentelemetry/api": "latest",
     "@opentelemetry/core": "latest",
     "@opentelemetry/exporter-trace-otlp-http": "latest",
     "@opentelemetry/instrumentation": "latest",
-    "@opentelemetry/instrumentation-fetch": "latest",
+    "@opentelemetry/instrumentation-xml-http-request": "latest",
     "@opentelemetry/resources": "latest",
     "@opentelemetry/sdk-trace-base": "latest",
     "@opentelemetry/sdk-trace-web": "latest",
-    "@opentelemetry/semantic-conventions": "latest"
+    "@opentelemetry/semantic-conventions": "latest",
+    "axios": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router-dom": "latest"
   },
   "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
+    "typescript": "latest",
     "vite": "latest"
   }
 }

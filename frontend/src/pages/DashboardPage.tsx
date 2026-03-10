@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import type { User } from '../types'
 
 export default function DashboardPage() {
-  const [user, setUser] = useState(null)
-  const [traceId, setTraceId] = useState(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [traceId, setTraceId] = useState<string | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
     const stored = localStorage.getItem('user')
-    if (stored) setUser(JSON.parse(stored))
+    if (stored) setUser(JSON.parse(stored) as User)
     // The login trace ID spans both the frontend (user.login span) and the backend (HTTP + DB spans)
     setTraceId(localStorage.getItem('loginTraceId'))
   }, [])
@@ -20,7 +21,7 @@ export default function DashboardPage() {
     navigate('/login')
   }
 
-  const formatDate = (d) =>
+  const formatDate = (d: string | undefined) =>
     d ? new Date(d).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '—'
 
   return (
