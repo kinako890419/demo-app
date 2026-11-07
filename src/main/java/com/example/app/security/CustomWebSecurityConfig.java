@@ -46,6 +46,8 @@ public class CustomWebSecurityConfig {
                         // allow spring doc API documentation without authentication
                         .requestMatchers("/api-docs", "/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        // OIDC login URL and IdP callback
+                        .requestMatchers("/api/v1/oidc/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

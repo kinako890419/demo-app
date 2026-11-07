@@ -13,8 +13,8 @@ import org.hibernate.annotations.SQLRestriction;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "OIDC_CONFIG")
-@SQLDelete(sql = "UPDATE SAML_CONFIG SET IS_DELETED = '1' WHERE ID = ?")
+@Table(name = "SAML_CONFIG")
+@SQLDelete(sql = "UPDATE SAML_CONFIG SET IS_DELETED = true WHERE ID = ?")
 @SQLRestriction("IS_DELETED = false")
 public class SamlConfigEntity extends BaseEntity {
     String idpName;

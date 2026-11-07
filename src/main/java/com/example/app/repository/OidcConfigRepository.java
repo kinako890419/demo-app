@@ -8,6 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface OidcConfigRepository extends JpaRepository<OidcConfigEntity, Long> {
-    Optional<OidcConfigEntity> findByIdpName(String name);
-    Optional<OidcConfigEntity> findByDomainFilter(String domain);
+    Optional<OidcConfigEntity> findByIdpName(String idpName);
 }

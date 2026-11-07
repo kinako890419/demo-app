@@ -1,0 +1,43 @@
+{
+  "realm": "app",
+  "enabled": true,
+  "registrationAllowed": false,
+  "clients": [
+    {
+      "clientId": "app-oidc",
+      "name": "demo-app OIDC login",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${KC_OIDC_CLIENT_SECRET}",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:8181/api/v1/oidc/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "basic", "email"]
+    }
+  ],
+  "users": [
+    {
+      "username": "testuser",
+      "email": "test@test.com",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "Oidc",
+      "credentials": [
+        { "type": "password", "value": "testpass", "temporary": false }
+      ]
+    }
+  ]
+}

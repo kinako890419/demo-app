@@ -106,6 +106,26 @@ services:
     volumes:
       - redis-data:/data
 
+  # OIDC test IdP. The realm in ./keycloak is imported on every start (skipped if it exists),
+  # so the client and test users come back after `docker compose down`.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5.1
+    container_name: app-keycloak
+    command: [ "start-dev", "--import-realm" ]
+    labels:
+      org.springframework.boot.ignore: "true"
+    env_file:
+      - .env
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+    ports:
+      - "${KC_HOST_PORT:-8888}:8080"
+
 volumes:
   redis-data:
   opensearch-data:

@@ -1,10 +1,12 @@
 package com.example.app.common.controller.advice;
 
 import com.example.app.common.enums.ResponseStatusEnums;
+import com.example.app.common.exception.BadRequestException;
 import com.example.app.common.exception.DataNotFoundException;
 import com.example.app.common.exception.DeleteFailException;
 import com.example.app.common.exception.DuplicatedDataException;
 import com.example.app.common.exception.InsertionFailException;
+import com.example.app.common.exception.OidcAuthFailedException;
 import com.example.app.common.models.RespMsg;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
@@ -55,6 +57,21 @@ public class GlobalExceptionHandler {
     public ResponseEntity<RespMsg> handleDeleteFailException(DeleteFailException ex) {
         log.warn("Delete failed: {}", ex.getMessage());
         return new ResponseEntity<>(createFailResponse(ex.getMessage()), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<RespMsg> handleBadRequestException(BadRequestException ex) {
+        log.warn("Bad request: {}", ex.getMessage());
+        return new ResponseEntity<>(createFailResponse(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(OidcAuthFailedException.class)
+    public ResponseEntity<RespMsg> handleOidcAuthFailedException(OidcAuthFailedException ex) {
+        log.warn("OIDC authentication failed: {}", ex.getMessage());
+        RespMsg resp = new RespMsg();
+        resp.setStatus(ResponseStatusEnums.UNAUTHENTICATED.getStatus());
+        resp.setMessage(ex.getMessage());
+        return new ResponseEntity<>(resp, HttpStatus.UNAUTHORIZED);
     }
 
     // Hibernate
