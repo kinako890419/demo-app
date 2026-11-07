@@ -17,6 +17,9 @@ public class UserProfileResp {
     @JsonProperty("user_name")
     private String name;
 
+    @JsonProperty("user_role")
+    private String role;
+
     @JsonProperty("created_at")
     private Date createdAt;
 

@@ -1,72 +1,83 @@
 package com.example.app.security.jwt;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.app.common.enums.ResponseStatusEnums;
 import com.example.app.common.models.RespMsg;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.util.Collections;
 
+/**
+ * Ported from spring-boot-exercise: on every request the user is re-loaded from the DB,
+ * so role changes and deleted accounts take effect immediately (not only when the token expires).
+ * The principal is a {@link com.example.app.security.CustomUserDetails}.
+ */
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
-
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
 
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
         String authHeader = request.getHeader(AUTHORIZATION_HEADER);
-
-        if (StringUtils.isEmpty(authHeader) || !authHeader.startsWith(BEARER_PREFIX)) {
+        if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
             String token = authHeader.substring(BEARER_PREFIX.length());
-            DecodedJWT decodedJWT = jwtService.validateToken(token);
+            String username = jwtService.extractUserName(token);
 
-            if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                String subject = decodedJWT.getSubject();
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(subject, null, Collections.emptyList());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.debug("Authenticated user: {}", subject);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if (jwtService.validateToken(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.debug("Authenticated user: {}", username);
+                }
             }
-
-            filterChain.doFilter(request, response);
-
-        } catch (Exception ex) {
-            log.warn("JWT validation failed: {}", ex.getMessage());
-            RespMsg resp = new RespMsg();
-            resp.setStatus(ResponseStatusEnums.UNAUTHENTICATED.getStatus());
-            resp.setMessage("JWT error: " + ex.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-
-            ObjectMapper mapper = new ObjectMapper();
-            response.getWriter().write(mapper.writeValueAsString(resp));
+        } catch (JwtException | UsernameNotFoundException ex) {
+            // UsernameNotFoundException: token is valid but the account was deleted
+            log.warn("JWT authentication failed: {}", ex.getMessage());
+            writeUnauthorized(response, "JWT error: " + ex.getMessage());
+            return;
         }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private void writeUnauthorized(HttpServletResponse response, String message) throws IOException {
+        RespMsg resp = new RespMsg();
+        resp.setStatus(ResponseStatusEnums.UNAUTHENTICATED.getStatus());
+        resp.setMessage(message);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(resp));
     }
 }

@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 public class JwtConfig {
+    /** Base64-encoded HMAC key */
     private String secret;
     private long expirationMs;
-    private String issuer;
 }

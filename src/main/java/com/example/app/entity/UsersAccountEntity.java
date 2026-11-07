@@ -15,7 +15,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Setter
 @NoArgsConstructor
 @Table(name = "USERS_ACCOUNT")
-@SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE users_account SET is_deleted = true WHERE id = ?")
 @SQLRestriction("IS_DELETED = false")
 public class UsersAccountEntity extends BaseEntity {
 
@@ -27,5 +27,9 @@ public class UsersAccountEntity extends BaseEntity {
 
     @Column(name = "password")
     private String password;
+
+    /** ADMIN or USER, see {@link com.example.app.common.enums.UserRolesEnums} */
+    @Column(name = "role", nullable = false)
+    private String role = "USER";
 
 }

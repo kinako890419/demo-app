@@ -1,6 +1,7 @@
 package com.example.app.service.impl;
 
 import com.example.app.common.enums.ResponseStatusEnums;
+import com.example.app.common.enums.UserRolesEnums;
 import com.example.app.common.exception.DataNotFoundException;
 import com.example.app.common.exception.DuplicatedDataException;
 import com.example.app.common.models.RespMsg;
@@ -61,6 +62,7 @@ public class AuthServiceImpl implements AuthService {
         user.setUsername(req.getUsername().trim());
         user.setEmail(req.getEmail());
         user.setPassword(passwordEncoder.encode(req.getPassword()));
+        user.setRole(UserRolesEnums.USER.getRole());
         user.setIsDeleted(false);
 
         userRepo.save(user);
@@ -109,13 +111,14 @@ public class AuthServiceImpl implements AuthService {
 //            throw e;
 //        }
 
-        String token = jwtService.generateToken(email);
+        String token = jwtService.generateToken(user.getId(), email, authentication.getAuthorities());
         log.debug("JWT token generated for email={}", email);
 
         UserProfileResp userProf = new UserProfileResp();
         userProf.setId(user.getId());
         userProf.setName(user.getUsername());
         userProf.setEmail(user.getEmail());
+        userProf.setRole(user.getRole());
         userProf.setCreatedAt(user.getCreatedTime());
         userProf.setUpdatedAt(user.getLastModified());
 
