@@ -7,6 +7,8 @@ import com.example.app.common.exception.DuplicatedDataException;
 import com.example.app.common.exception.InsertionFailException;
 import com.example.app.common.models.RespMsg;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -43,10 +45,31 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(createFailResponse(ex.getMessage()), HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({InsertionFailException.class, DeleteFailException.class})
+    @ExceptionHandler(InsertionFailException.class)
     public ResponseEntity<RespMsg> handleInsertionFailException(InsertionFailException ex) {
         log.error("Insertion failed: {}", ex.getMessage());
         return new ResponseEntity<>(createFailResponse(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DeleteFailException.class)
+    public ResponseEntity<RespMsg> handleDeleteFailException(DeleteFailException ex) {
+        log.warn("Delete failed: {}", ex.getMessage());
+        return new ResponseEntity<>(createFailResponse(ex.getMessage()), HttpStatus.FORBIDDEN);
+    }
+
+    // Hibernate
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<RespMsg> handleConstraintViolation(ConstraintViolationException ex) {
+        log.warn("Constraint violation: {}", ex.getConstraintName());
+        return new ResponseEntity<>(createFailResponse("Constraint violation: " + ex.getConstraintName()),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<RespMsg> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        log.warn("Data integrity violation: {}", ex.getMessage());
+        return new ResponseEntity<>(createFailResponse("DB Data integrity violation: " + ex.getMessage()),
+                HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
