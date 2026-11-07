@@ -66,7 +66,12 @@ public class CustomWebSecurityConfig {
         config.setExposedHeaders(List.of("Authorization"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        return source;
+        // The SAML IdP posts its response as a top-level form navigation from the IdP's origin.
+        // CORS does not apply to that (it only guards scripts reading responses), so skip it here;
+        // otherwise the browser's Origin header gets the POST rejected with 403 "Invalid CORS request".
+        return request -> request.getRequestURI().startsWith("/api/v1/saml/login/")
+                ? null
+                : source.getCorsConfiguration(request);
     }
 
     @Bean
