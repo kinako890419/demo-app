@@ -35,3 +35,9 @@ GET http://localhost:8181/api/v1/oidc/login?email=test@test.com
 
 ### OIDC: get the IdP login URL by IdP name
 GET http://localhost:8181/api/v1/oidc/login?idp=keycloak
+
+### SSO: IdP login URL for any protocol (test2.com -> SAML, test.com -> OIDC)
+GET http://localhost:8181/api/v1/sso/login?email=test@test2.com
+
+### SAML: IdP login URL (open "url" in a browser, sign in as samluser / testpass)
+GET http://localhost:8181/api/v1/saml/idp-url?email=test@test2.com

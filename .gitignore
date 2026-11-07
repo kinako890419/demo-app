@@ -38,9 +38,6 @@ build/
 /logback-logs/
 /otel-logs/
 
-# ai chat
-/.claude/
-
 # frontend
 /frontend/node_modules/
 /frontend/dist/

@@ -1,11 +1,13 @@
 package com.example.app.common.config;
 
 import com.example.app.entity.OidcConfigEntity;
+import com.example.app.entity.SamlConfigEntity;
 import com.example.app.entity.StatusEntity;
 import com.example.app.entity.UsersAccountEntity;
 import com.example.app.common.enums.ProjectTaskEnums;
 import com.example.app.common.enums.UserRolesEnums;
 import com.example.app.repository.OidcConfigRepository;
+import com.example.app.repository.SamlConfigRepository;
 import com.example.app.repository.StatusRepository;
 import com.example.app.repository.UsersAccountRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +40,9 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
     @Autowired
     private OidcConfigRepository oidcConfigRepository;
 
+    @Autowired
+    private SamlConfigRepository samlConfigRepository;
+
     @Value("${seed.oidc.keycloak.issuer-url:}")
     private String keycloakIssuerUrl;
     @Value("${seed.oidc.keycloak.client-id:}")
@@ -49,6 +54,13 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
     private String googleClientId;
     @Value("${seed.oidc.google.client-secret:}")
     private String googleClientSecret;
+
+    @Value("${seed.saml.saml-test.idp-sso-url:}")
+    private String samlIdpSsoUrl;
+    @Value("${seed.saml.saml-test.idp-entity-id:}")
+    private String samlIdpEntityId;
+    @Value("${seed.saml.saml-test.certificate:}")
+    private String samlCertificate;
 
     @Override
     public void run(String[] args){
@@ -75,11 +87,13 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
     }
 
     private void seedSso() {
-        // SSO-only account (no password): matches the Keycloak user testuser in dockerfiles/keycloak/app-realm.json
-        createSsoUserIfNotExists("test@test.com", "test-keycloak-oidc");
+        // SSO-only accounts (no password), matching the Keycloak users in dockerfiles/keycloak/app-realm.json
+        createSsoUserIfNotExists("test@test.com", "test-keycloak-oidc"); // testuser, OIDC
+        createSsoUserIfNotExists("test@test2.com", "test-saml");         // samluser, SAML
 
         seedOidcConfig("keycloak", "test\\.com", keycloakIssuerUrl, keycloakClientId, keycloakClientSecret);
         seedOidcConfig("google", "gmail\\.com", "https://accounts.google.com", googleClientId, googleClientSecret);
+        seedSamlConfig("saml-test", "test2\\.com", samlIdpSsoUrl, samlIdpEntityId, samlCertificate);
     }
 
     private void createSsoUserIfNotExists(String email, String username) {
@@ -113,6 +127,28 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
         fillIfBlank(oidcConfig::getClientSecret, oidcConfig::setClientSecret, clientSecret);
 
         oidcConfigRepository.save(oidcConfig);
+    }
+
+    private void seedSamlConfig(String idpName, String domainFilter,
+                                String idpSsoUrl, String idpEntityId, String certificate) {
+        SamlConfigEntity existing = samlConfigRepository.findByIdpName(idpName).orElse(null);
+
+        if (existing == null && StringUtils.isBlank(certificate)) {
+            log.info("Skip seeding SAML IdP '{}': seed.saml.{}.certificate is not set", idpName, idpName);
+            return;
+        }
+
+        SamlConfigEntity samlConfig = existing;
+        if (samlConfig == null) {
+            samlConfig = new SamlConfigEntity();
+            samlConfig.setIdpName(idpName);
+            samlConfig.setDomainFilter(domainFilter);
+        }
+        fillIfBlank(samlConfig::getIdpSsoUrl, samlConfig::setIdpSsoUrl, idpSsoUrl);
+        fillIfBlank(samlConfig::getIdpEntityId, samlConfig::setIdpEntityId, idpEntityId);
+        fillIfBlank(samlConfig::getCertificate, samlConfig::setCertificate, certificate);
+
+        samlConfigRepository.save(samlConfig);
     }
 
     private static void fillIfBlank(Supplier<String> getter, Consumer<String> setter, String value) {
